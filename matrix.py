@@ -1,12 +1,14 @@
 class Matrix:
-    def __init__(self, values=None, data_type=int, row=5, col=5):
+    def __init__(self, row, col, values=None, data_type=int):
         self.data_type = data_type
         self.width = 5
         self.rows = row
         self.cols = col
-        self.shape = (self.rows, self.cols)
         self.matrix = [[values] * self.cols for y in range(self.rows)]
 
+    @property
+    def shape(self):
+        return (self.rows, self.cols)
 
     def __add__(self, other):
         new_matrix = Matrix(data_type=self.data_type, 
@@ -21,7 +23,7 @@ class Matrix:
                 raise ShapeError(
                     f"Both matrices must have the same shape {self.shape}, and {other.shape} were used")
             # If shape and datatype is correct, add every cell of same position together
-            for row in range(self.rows-1):
+            for row in range(self.rows):
                 for col in range(self.cols):
                     if self.matrix[row][col] is not None and other.matrix[row][col] is not None:
                         new_matrix[row][col] = self.matrix[row][col] + other.matrix[row][col]
@@ -43,7 +45,7 @@ class Matrix:
                     f"Both matrices must have the same shape {self.shape}, and {other.shape} were used")
 
             # If shape and datatype is correct, add every cell of same position together
-            for row in range(self.rows-1):
+            for row in range(self.rows):
                 for col in range(self.cols):
                     if self.matrix[row][col] is not None and other.matrix[row][col] is not None:
                         new_matrix[row][col] = self.matrix[row][col] - \
@@ -53,41 +55,11 @@ class Matrix:
 
 
     def __iadd__(self, other):
-        # Check if it's another matrix of same shape and datavalue
-        if isinstance(other, Matrix):
-            if self.data_type is not other.data_type:
-                raise TypeError("Matrices does not contain same data type")
-
-            if self.shape != other.shape:
-                raise ShapeError(
-                    f"Both matrices must have the same shape {self.shape}, and {other.shape} were used")
-            # If shape and datatype is correct, add every cell of same position together
-            for row in range(self.rows-1):
-                for col in range(self.cols):
-                    if self.matrix[row][col] is not None and other.matrix[row][col] is not None:
-                        self.matrix[row][col] += other.matrix[row][col]
-
-        return self
-
+        return self.__add__(other)
 
 
     def __isub__(self, other):
-        # Check if it's another matrix of same shape and datavalue
-        if isinstance(other, Matrix):
-            if self.data_type is not other.data_type:
-                raise TypeError("Matrices does not contain same data type")
-
-            if self.shape != other.shape:
-                raise ShapeError(
-                    f"Both matrices must have the same shape {self.shape}, and {other.shape} were used")
-
-            # If shape and datatype is correct, add every cell of same position together
-            for row in range(self.rows-1):
-                for col in range(self.cols):
-                    if self.matrix[row][col] is not None and other.matrix[row][col] is not None:
-                        self.matrix[row][col] -= other.matrix[row][col]
-
-        return self
+        return self.__sub__(other)
 
 
     def __getitem__(self, key):
@@ -130,11 +102,12 @@ class Matrix:
 
     def __repr__(self):
         matrix_display = ",\n ".join(map(str, self.matrix))
-        return f"""[{matrix_display}]\
-                \rNumber of rows: {self.rows}\
-                \rNumber of columns: {self.cols}\
+        return f"""Matrix({self.rows}, {self.cols}, data_type={self.data_type.__name__})
+                \r[{matrix_display}]\
+                \rRows: {self.rows}\
+                \rColumns: {self.cols}\
                 \rShape: {self.shape}\
-                \rData type: {self.data_type}\n"""
+                \rData type: {self.data_type.__name__}\n"""
             
     def __str__(self):
         join_width = " " * (self.width - 1)
@@ -147,17 +120,7 @@ class Matrix:
             return_string += "\n"
         
         return return_string
-        #return "\n".join(map(str, self.matrix))
-        """ Join string version of displaying matrix by Wattle
-        heading = '{:5} {}'.format('',
-            ' '.join(format(f'{i}.', '<5') for i in range(COLS)))
 
-        body = '\n'.join('{:<5} {}'.format(f'{i}.',
-            ' '.join(f'{str(cell):<5}' for cell in row))
-            for i, row in enumerate(matrix))
-
-        return heading + '\n' + body
-        """
 
     
 class ShapeError(Exception):
