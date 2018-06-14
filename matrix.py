@@ -1,19 +1,25 @@
 class Matrix:
-    def __init__(self, row, col, values=None, data_type=int):
-        self.data_type = data_type
-        self.width = 5
+    def __init__(self, row, col, values=None, data_type=None):
         self.rows = row
         self.cols = col
         self.matrix = [[values] * self.cols for y in range(self.rows)]
+
+        if data_type is None and values is not None:
+            self.data_type = type(values)
+        elif data_type is not None:
+            self.data_type = data_type
+        else:
+            self.data_type = int
+
+        self.width = 5
 
     @property
     def shape(self):
         return (self.rows, self.cols)
 
     def __add__(self, other):
-        new_matrix = Matrix(data_type=self.data_type, 
+        new_matrix = Matrix(data_type=self.data_type,
                             row=self.rows, col=self.cols)
-
         # Check if it's another matrix of same shape and datavalue
         if isinstance(other, Matrix):
             if self.data_type is not other.data_type:
@@ -21,19 +27,57 @@ class Matrix:
 
             if self.shape != other.shape:
                 raise ShapeError(
-                    f"Both matrices must have the same shape {self.shape}, and {other.shape} were used")
+                    "Both matrices must have the same shape "
+                    f"{self.shape}, and {other.shape} were used")
             # If shape and datatype is correct, add every cell of same position together
             for row in range(self.rows):
                 for col in range(self.cols):
-                    if self.matrix[row][col] is not None and other.matrix[row][col] is not None:
-                        new_matrix[row][col] = self.matrix[row][col] + other.matrix[row][col]
-        
+                    if self[row:col] is not None and other[row:col] is not None:
+                        new_matrix[row:col] = self[row:col] + other[row:col]
         return new_matrix
 
 
     def __sub__(self, other):
         new_matrix = Matrix(data_type=self.data_type,
                             row=self.rows, col=self.cols)
+        # Check if it's another matrix of same shape and datavalue
+        if isinstance(other, Matrix):
+            if self.data_type is not other.data_type:
+                raise TypeError("Matrices does not contain same data type")
+
+            if self.shape != other.shape:
+                raise ShapeError(
+                    "Both matrices must have the same shape "
+                    f"{self.shape}, and {other.shape} were used")
+
+            # If shape and datatype is correct, add every cell of same position together
+            for row in range(self.rows):
+                for col in range(self.cols):
+                    if self[row:col] is not None and other[row:col] is not None:
+                        new_matrix[row:col] = self[row:col] - other[row:col]
+        return new_matrix
+
+
+    def __mul__(self, other):
+        new_matrix = Matrix(data_type=self.data_type,
+                            row=self.rows, col=self.cols)
+        # Check if it's another matrix of same shape and datavalue
+        if isinstance(other, Matrix):
+            if self.data_type is not other.data_type:
+                raise TypeError("Matrices does not contain same data type")
+
+            if self.shape != other.shape:
+                raise ShapeError(
+                    "Both matrices must have the same shape "
+                    f"{self.shape}, and {other.shape} were used")
+
+            for row in range(self.rows):
+                for col in range(self.cols):
+                    if self[row:col] is not None and other[row:col] is not None:
+                        new_matrix[row:col] = self[row:col] * other[row:col]
+        return new_matrix
+
+    def __truediv__(self, other):
 
         # Check if it's another matrix of same shape and datavalue
         if isinstance(other, Matrix):
@@ -42,25 +86,23 @@ class Matrix:
 
             if self.shape != other.shape:
                 raise ShapeError(
-                    f"Both matrices must have the same shape {self.shape}, and {other.shape} were used")
+                    "Both matrices must have the same shape "
+                    f"{self.shape}, and {other.shape} were used")
 
-            # If shape and datatype is correct, add every cell of same position together
+            new_matrix = Matrix(data_type=self.data_type , row=self.rows, col=self.cols)
             for row in range(self.rows):
                 for col in range(self.cols):
-                    if self.matrix[row][col] is not None and other.matrix[row][col] is not None:
-                        new_matrix[row][col] = self.matrix[row][col] - \
-                            other.matrix[row][col]
+                    new_matrix[row:col] = self.data_type(
+                        self[row:col] / other[row:col])
+            return new_matrix
+        else:
+            return NotImplemented
 
-        return new_matrix
-
-
-    def __iadd__(self, other):
-        return self.__add__(other)
-
-
-    def __isub__(self, other):
-        return self.__sub__(other)
-
+    __iadd__ = __add__
+    __isub__ = __sub__
+    __imul__ = __mul__
+    __idiv__ = __truediv__
+    
 
     def __getitem__(self, key):
         # Check if key is a slice
